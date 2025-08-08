@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "recolor-pdf"
+version = "0.1.0"
+description = ""
+authors = ["Willebaldo Gomez <willebaldo.gomez@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pypdf2 = "^3.0.1"
+pymupdf = "^1.25.1"
+tqdm = "^4.67.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.8"
+mypy = "^1.17.1"
+types-tqdm = "^4.67.0.20250516"
+
+[[tool.mypy.overrides]]
+module = "pymupdf.*"
+ignore_missing_imports = true
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
