@@ -24,4 +24,6 @@ typecheck:
 	@echo "$(YELLOW)==> Running type checker (mypy)$(RESET)"
 	@poetry run mypy .
 
+run:
+	@poetry run python -m main $(ARGS)
 # end

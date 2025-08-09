@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import re
 from pathlib import Path
 
@@ -7,6 +8,21 @@ from tqdm import tqdm
 import pymupdf
 
 RGBColor = tuple[float, float, float]
+
+
+def hex_to_rgb_normalized(hex_color: str) -> RGBColor:
+    """
+    Converts a hex color string (e.g., '#RRGGBB') to a normalized RGB tuple (0.0-1.0).
+    """
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) != 6:
+        raise ValueError("Invalid hex color format. Expected #RRGGBB.")
+
+    r = int(hex_color[0:2], 16) / 255.0
+    g = int(hex_color[2:4], 16) / 255.0
+    b = int(hex_color[4:6], 16) / 255.0
+    return (round(r, 4), round(g, 4), round(b, 4))
+
 
 # <number> <number> <number> (rg|RG)
 COLOR_COMMAND_PATTERN = re.compile(
@@ -27,6 +43,7 @@ def change_text_color(
     This version uses a more flexible regex and a custom replacement function to handle
     both integer (0-255) and floating-point (0.0-1.0) color specifications.
     """
+
     # to be used by re.sub to check and replace colors
     def recolor_text(match):
         """
@@ -108,6 +125,29 @@ def writable_pdf(path_str: str) -> Path:
     return path
 
 
+def load_color_change_requests(colors_file_path: Path) -> dict[RGBColor, RGBColor]:
+    color_change_requests: dict[RGBColor, RGBColor] = {}
+    try:
+        with open(colors_file_path, "r") as f:
+            color_data = json.load(f)
+            for item in color_data:
+                target_hex = item["target"]
+                replacement_hex = item["replacement"]
+                color_change_requests[hex_to_rgb_normalized(target_hex)] = (
+                    hex_to_rgb_normalized(replacement_hex)
+                )
+    except FileNotFoundError:
+        print(f"Error: Colors file '{colors_file_path}' not found.")
+        exit(1)
+    except json.JSONDecodeError:
+        print(f"Error: Invalid JSON format in '{colors_file_path}'.")
+        exit(1)
+    except ValueError as e:
+        print(f"Error in color conversion: {e}")
+        exit(1)
+    return color_change_requests
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Change text color in a PDF.")
     parser.add_argument(
@@ -116,14 +156,16 @@ def main() -> None:
     parser.add_argument(
         "output_pdf", type=writable_pdf, help="Path to the output PDF file"
     )
+    parser.add_argument(
+        "--colors_file",
+        type=existing_pdf,
+        default="colors.json",
+        help="Path to the JSON file containing color mappings (default: colors.json)",
+    )
     args = parser.parse_args()
 
-    color_change_requests = {
-        # bibliography styling
-        (1.0, 0.0, 0.0): (0.0, 0.0, 1.0),  # pure green to pure blue
-        # links styling
-        (0.0, 1.0, 0.0): normalize_color((128, 32, 32)),  # pure red to crimson red
-    }
+    color_change_requests = load_color_change_requests(args.colors_file)
+
     change_text_color(
         args.input_pdf, args.output_pdf, color_change_requests=color_change_requests
     )

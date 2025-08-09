@@ -1,0 +1,10 @@
+[
+  {
+    "target": "#FF0000",
+    "replacement": "#0000FF"
+  },
+  {
+    "target": "#00FF00",
+    "replacement": "#802020"
+  }
+]
