@@ -1,15 +1,6 @@
 # Features
-+ Replace one text color with another (for every page in the document.)
-
-# TODO
-+ Perform multiple replacements (`original_color -> new_color`) in a single command.
-
-# Limitations
-+ Replacing colors must be done by specifying the target and replacement colors in the code. This should be done by reading a specification file.
++ Change text in some color to another color for every page in the document.
 
 # Usage
-Within the `java` directory, run:
-
-``` shell
-./gradlew run <input-filepath> <output-filepath>
-```
++ See `java/README.md` for the `java` version.
++ See `py/README.md` for the `python` version.
